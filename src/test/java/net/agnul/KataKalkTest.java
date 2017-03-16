@@ -3,11 +3,16 @@ package net.agnul;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class KataKalkTest {
 
     KataKalk kalk = new KataKalk();
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testOnEmptyString() {
@@ -40,10 +45,16 @@ public class KataKalkTest {
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testManyNumbersAndNegatives() {
 
-        assertThat(kalk.add("20,30,-5,-5,2"), is (42));
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(allOf(
+                containsString("Negative numbers are not allowed"),
+                containsString("-5"),
+                containsString("-3")));
+
+        assertThat(kalk.add("20,30,-5,-3,2"), is (42));
 
     }
 
@@ -65,6 +76,13 @@ public class KataKalkTest {
     public void testWithCustomDelimiters() {
 
         assertThat(kalk.add("//#\n20#, 10,5\n          5,#\n2"), is (42));
+
+    }
+
+    @Test
+    public void testNumbersGreaterThan1000AreIgnored() {
+
+        assertThat(kalk.add("//#\n20#, 10,2000, 5\n          5,#\n2,1001"), is (42));
 
     }
 }

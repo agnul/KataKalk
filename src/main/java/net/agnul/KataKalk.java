@@ -1,6 +1,8 @@
 package net.agnul;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -15,12 +17,22 @@ public class KataKalk {
         String[] strings = StringUtils.split(s, getDelimiters(s));
         log.info("STRINGS {}, size {}", strings, strings.length);
 
-        return Arrays.stream(strings)
+        List<Integer> numbers = Arrays.stream(strings)
                 .map(this::trimSpaces)
                 .map(this::convertToInteger)
-                .map(this::throwOnNegatives)
-                .reduce(this::addNumbers)
-                .orElse(0);
+                .filter(n -> n <= 1000)
+                .collect(Collectors.toList());
+
+        List<Integer> negatives = numbers.stream()
+                .filter(n -> n < 0)
+                .collect(Collectors.toList());
+
+        if ( ! negatives.isEmpty() ) {
+            throw new IllegalArgumentException(String.format(
+                    "Negative numbers are not allowed %s", StringUtils.join(negatives, ",")));
+        }
+
+        return numbers.stream().reduce(this::addNumbers).orElse(0);
 
     }
 
@@ -39,16 +51,6 @@ public class KataKalk {
     private int convertToInteger(String s) {
 
         return NumberUtils.toInt(s);
-
-    }
-
-    private int throwOnNegatives(int n) {
-
-        if (n < 0) {
-            throw new IllegalArgumentException("Negative numbers are not allowed: " + n);
-        }
-
-        return n;
 
     }
 
